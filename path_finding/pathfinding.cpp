@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <vector>
 #include <list>
+#include <algorithm>
 
 
 #ifdef WIN32
@@ -133,8 +134,6 @@ namespace
 			for(int j = 0; j <= height; j++) {
 				if( (i != startX && j != startY) || (i != endX && j != endY) ) { // Skip start and end
 					Node node( i, j, GetPixel(i, j, inputData, width) );
-					//node.gCost = GetDistance(&node, &nodeList[0]);
-					//node.hCost = GetDistance(&node, &nodeList[1]);
 					nodeList.push_back(node);
 				}
 			}
