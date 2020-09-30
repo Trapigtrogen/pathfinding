@@ -76,8 +76,8 @@ namespace
 		data[3*x+2 + y * 3 * width] = px.b;
 	}
 
-	std::vector<Position> GetNeighbourPositions(Node *node, int width, int height) {
-		std::vector<Position> neighbours;
+	std::list<Node*> GetNeighbours(Node *node, const uint8_t* inputData, int width, int height) {
+		std::list<Node*> neighbours;
 		for (int x = -1; x <= 1; x++) {
 			for (int y = -1; y <= 1; y++) {
 				if(x == 0 && y == 0) continue; // skip self
@@ -86,8 +86,7 @@ namespace
 				int checkY = node->pos.y + y;
 
 				if (checkX >= 0 && checkX <= width && checkY >= 0 && checkY <= height) {
-					Position pos = {checkX, checkY};
-					neighbours.push_back(pos);
+					neighbours.push_back(new Node(checkX, checkY, GetPixel(checkX, checkY, inputData, width)));
 				}
 			}
 		}
@@ -149,7 +148,7 @@ namespace
 
 					//printf("current costs (gh): %d - %d - index costs (gh): %d - %d\n",  nodeList[currentNode].gCost, nodeList[currentNode].hCost, nodeList[i].gCost, nodeList[i].hCost);
 					//printf("current fcost: %d - index fcost: %d\n",  nodeList[currentNode].fCost(), nodeList[i].fCost());
-					//printf("current node: %d\n", currentNode);
+					printf("current node: %d\n", currentNode);
 
 					if(nodeList[i].fCost() < nodeList[currentNode].fCost() || nodeList[i].hCost < nodeList[currentNode].hCost) {
 						currentNode = i;
@@ -167,9 +166,9 @@ namespace
 			}
 
 			// Check all neighbours and set proper ones open for checking
-			for(Position neighbourPos : GetNeighbourPositions( &nodeList[currentNode], width, height) ) {
+			for(Node* neighbourNode : GetNeighbours( &nodeList[currentNode], inputData, width, height) ) {
 				for(int neighbour = 0; neighbour < nodeList.size(); neighbour++) {
-					if(nodeList[neighbour].pos.x == neighbourPos.x && nodeList[neighbour].pos.y == neighbourPos.y) {
+					if(nodeList[neighbour].pos.x == neighbourNode->pos.x && nodeList[neighbour].pos.y == neighbourNode->pos.y) {
 
 						// Skip iteration if neighbour is wall or in closedList
 						if(nodeList[neighbour].wall || nodeList[neighbour].state == closed) continue;
