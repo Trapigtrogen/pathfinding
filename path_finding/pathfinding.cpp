@@ -6,7 +6,6 @@
 #include <list>
 #include <algorithm>
 
-
 #ifdef WIN32
 #include <glut/glut.h> // Windows
 #else
@@ -19,8 +18,6 @@
 
 namespace
 {
-	bool pathFound = false;
-
 	struct Pixel {
 		uint8_t r;
 		uint8_t g;
@@ -69,8 +66,8 @@ namespace
 		data[3*x+2 + y * 3 * width] = px.b;
 	}
 
-	std::list<Node> GetNeighbours(Node *node, const uint8_t* inputData, int width, int height) {
-		std::list<Node> neighbours;
+	std::vector<Node*> GetNeighbours(Node *node, const uint8_t* inputData, int width, int height) {
+		std::vector<Node*> neighbours;
 		for (int x = -1; x <= 1; x++) {
 			for (int y = -1; y <= 1; y++) {
 				if(x == 0 && y == 0) continue; // skip self
@@ -79,7 +76,7 @@ namespace
 				int checkY = node->pos.y + y;
 
 				if (checkX >= 0 && checkX <= width && checkY >= 0 && checkY <= height) {
-					neighbours.push_back(Node(checkX, checkY, GetPixel(checkX, checkY, inputData, width)));
+					neighbours.push_back(new Node(checkX, checkY, GetPixel(checkX, checkY, inputData, width)));
 				}
 			}
 		}
@@ -96,9 +93,9 @@ namespace
 		return 14 * dstX + 10 * (dstY - dstX);
 	}
 
-	void RetracePath(Node *startNode, Node *endNode, uint8_t* outputData, int width) {
+	void RetracePath(Node* startNode, Node* endNode, uint8_t* outputData, int width) {
 		std::vector<Node*> path;
-		Node *currentNode = endNode;
+		Node* currentNode = endNode;
 
 		Pixel px = {0,0,0};
 
@@ -112,62 +109,57 @@ namespace
 	// STUDENT_TODO: Make implementation for doPathFinding function, which writes found path to outputData
 	void doPathFinding(const uint8_t* inputData, int width, int height, uint8_t* outputData, int startX, int startY, int endX, int endY)
 	{
-		std::vector<Node> openList;
-		std::vector<Node> closedList;
+		std::vector<Node*> openList;
+		std::vector<Node*> closedList;
 
-		Node startNode(startX, startY, GetPixel(startX, startY, inputData, width));
-		Node endNode(endX, endY, GetPixel(endX, endY, inputData, width));
-		startNode.gCost = 0;
-		startNode.hCost = GetDistance(&startNode, &endNode);
-		endNode.gCost = GetDistance(&endNode, &startNode);
-		endNode.hCost = 0;
+		Node* startNode = new Node(startX, startY, GetPixel(startX, startY, inputData, width));
+		Node* endNode = new Node(endX, endY, GetPixel(endX, endY, inputData, width));
+		startNode->gCost = 0;
+		startNode->hCost = GetDistance(startNode, endNode);
+		endNode->gCost = GetDistance(endNode, startNode);
+		endNode->hCost = 0;
 
 		openList.push_back(startNode);
 
 		// Pathfinding loop
-		while(!pathFound) {
-			int currentNode = 0;
+		while(openList.size() > 0) {
+			Node* currentNode = startNode;
 			for(int i = 0; i < openList.size(); ++i) {
 				// Check the nodes in open list for cheapest walking cost
 
-				printf("current node: %d\n", currentNode);
+				printf("current node: %d,%d\n", currentNode->pos.x, currentNode->pos.y);
 
-				if(openList[i].fCost() < openList[currentNode].fCost() || openList[i].hCost < openList[currentNode].hCost) {
-					currentNode = i;
+				if(openList[i]->fCost() < currentNode->fCost() || openList[i]->fCost() == currentNode->fCost() && openList[i]->hCost < currentNode->hCost) {
+					currentNode = openList[i];
 				}
-			}			
+			}		
 			// set node to checked
-			closedList.push_back(openList[currentNode]);
-			openList.erase(openList.begin() + currentNode);
+			closedList.push_back(currentNode);
+			openList.erase(std::find(std::begin(openList), std::end(openList), currentNode));
 
 			// Path found
-			if(currentNode == 1) {
-				RetracePath( &openList[0], &endNode, outputData, width );
-				pathFound = true;
+			if(currentNode == endNode) {
+				RetracePath( startNode, endNode, outputData, width );
 				return;
 			}
 
 			// Check all neighbours and set proper ones open for checking
-			for(Node neighbourNode : GetNeighbours( &openList[currentNode], inputData, width, height) ) {
-				for(int neighbour = 0; neighbour < openList.size(); neighbour++) {
-					if(openList[neighbour].pos.x == neighbourNode.pos.x && openList[neighbour].pos.y == neighbourNode.pos.y) {
+			for(Node* neighbourNode : GetNeighbours( currentNode, inputData, width, height) ) {
+				// Skip iteration if neighbour is wall or in closedList
+				std::vector<Node*>::iterator closedFound = std::find(std::begin(closedList), std::end(closedList), neighbourNode);
+				if(neighbourNode->wall || closedFound != closedList.end()) continue;
 
-						// Skip iteration if neighbour is wall or in closedList
-						std::vector<Node>::iterator closedFound = std::find(std::begin(closedList), std::end(closedList), neighbourNode);
-						if(openList[neighbour].wall || closedFound != closedList.end()) continue;
+				// Calculate how much it costs to get to the end for each neighbour
+				int newGCost = currentNode->gCost + GetDistance( currentNode, neighbourNode );
+				std::vector<Node*>::iterator openFound = std::find(std::begin(openList), std::end(openList), neighbourNode);
+				if(newGCost < neighbourNode->gCost || openFound == openList.end()) {
+					neighbourNode->gCost = newGCost;
+					neighbourNode->hCost = GetDistance(neighbourNode, endNode);
+					neighbourNode->parent = currentNode;
 
-						// Calculate how much it costs to get to the end for each neighbour
-						int newGCost = openList[currentNode].gCost + GetDistance( &openList[currentNode], &openList[neighbour] );
-						std::vector<Node>::iterator openFound = std::find(std::begin(openList), std::end(openList), neighbourNode);
-						if(newGCost < openList[neighbour].gCost || openFound == openList.end()) {
-							openList[neighbour].gCost = newGCost;
-							openList[neighbour].hCost = GetDistance(&openList[neighbour], &openList[1]);
-							openList[neighbour].parent = &openList[currentNode];
-
-							if(openFound == openList.end()) {
-								openList.push_back(neighbourNode);
-							}
-						}
+					// if neighbour is not in openlist add it
+					if(openFound == openList.end()) {
+						openList.push_back(neighbourNode);
 					}
 				}
 			}
