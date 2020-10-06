@@ -8,6 +8,8 @@ if (WIN32)
     link_directories("../../glut")
 endif()
 
+set(CMAKE_VERBOSE_MAKEFILE on)
+
 find_package(GLUT REQUIRED)
 find_package(OpenGL REQUIRED)
 

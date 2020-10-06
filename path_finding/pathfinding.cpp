@@ -27,6 +27,10 @@ namespace
 	struct Position {
 		int x;
 		int y;
+
+		bool operator==(const Position& p)const {
+			return x==p.x && y==p.y;
+		}
 	};
 
 	class Node {
@@ -127,9 +131,9 @@ namespace
 			for(int i = 0; i < openList.size(); ++i) {
 				// Check the nodes in open list for cheapest walking cost
 
-				printf("current node: %d,%d\n", currentNode->pos.x, currentNode->pos.y);
+				//printf("current node: %d,%d\n", currentNode->pos.x, currentNode->pos.y);
 
-				if(openList[i]->fCost() < currentNode->fCost() || openList[i]->fCost() == currentNode->fCost() && openList[i]->hCost < currentNode->hCost) {
+				if(openList[i]->fCost() < currentNode->fCost() || openList[i]->fCost() != currentNode->fCost() && openList[i]->hCost < currentNode->hCost) {
 					currentNode = openList[i];
 				}
 			}		
@@ -146,23 +150,41 @@ namespace
 			// Check all neighbours and set proper ones open for checking
 			for(Node* neighbourNode : GetNeighbours( currentNode, inputData, width, height) ) {
 				// Skip iteration if neighbour is wall or in closedList
-				std::vector<Node*>::iterator closedFound = std::find(std::begin(closedList), std::end(closedList), neighbourNode);
-				if(neighbourNode->wall || closedFound != closedList.end()) continue;
+				std::vector<Node*>::iterator closedFound = std::find_if(std::begin(closedList), std::end(closedList), 
+					[neighbourNode](const Node* rhs) {
+					return neighbourNode->pos == rhs->pos;
+				});
+				if(neighbourNode->wall || closedFound != closedList.end()) {
+					delete neighbourNode;
+					continue;
+				}
+
+				Pixel px = {closedList.size()/16384.0*255,0,0};
+				SetPixel(neighbourNode->pos.x, neighbourNode->pos.y, outputData, width, px);
 
 				// Calculate how much it costs to get to the end for each neighbour
 				int newGCost = currentNode->gCost + GetDistance( currentNode, neighbourNode );
-				std::vector<Node*>::iterator openFound = std::find(std::begin(openList), std::end(openList), neighbourNode);
+				std::vector<Node*>::iterator openFound = std::find_if(std::begin(openList), std::end(openList),
+					[neighbourNode](const Node* rhs) {
+					return neighbourNode->pos == rhs->pos;
+				});
 				if(newGCost < neighbourNode->gCost || openFound == openList.end()) {
 					neighbourNode->gCost = newGCost;
 					neighbourNode->hCost = GetDistance(neighbourNode, endNode);
 					neighbourNode->parent = currentNode;
 
-					// if neighbour is not in openlist add it
+					// if neighbour is not in openlist add it					
 					if(openFound == openList.end()) {
 						openList.push_back(neighbourNode);
 					}
 				}
 			}
+
+			//printf("%d\n", closedList.size());
+
+		}
+		for (Node* node : closedList){
+			delete node;
 		}
 	}
 
