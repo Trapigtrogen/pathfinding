@@ -1,0 +1,1 @@
+/usr/bin/c++ -rdynamic CMakeFiles/Pathfinding.dir/path_finding/pathfinding.cpp.o -o Pathfinding  -lGL -lGLU -lglut -lXmu -lXi 
