@@ -1,3 +1,4 @@
 build/
 glut/
 .vscode/
+.cache/
