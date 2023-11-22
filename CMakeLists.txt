@@ -1,29 +1,23 @@
-cmake_minimum_required (VERSION 2.6)
-
-# set the project name
+cmake_minimum_required (VERSION 3.4)
 project(Pathfinding)
-
-if (WIN32)
-    # Specify directories in which the linker will look for libraries.
-    link_directories("../../glut")
-endif()
 
 set(CMAKE_VERBOSE_MAKEFILE on)
 
-find_package(GLUT REQUIRED)
-find_package(OpenGL REQUIRED)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-include_directories(${OPENGL_INCLUDE_DIRS} 
-                    ${GLUT_INCLUDE_DIRS}
-                    )
+set(BITNESS 64)
 
-# add the executable
-add_executable(Pathfinding path_finding/pathfinding.cpp)
+set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
 
-target_include_directories(Pathfinding PUBLIC
-                           "${PROJECT_BINARY_DIR}"
-						   )
-						   
-target_link_libraries(Pathfinding ${OPENGL_LIBRARIES} ${GLUT_LIBRARY})
+include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/external/Drawpp/include)
 
-configure_file(path_finding/input.bmp ./input.bmp COPYONLY)
+file(GLOB SOURCES "src/*.cpp")
+
+add_executable(Pathfinding ${SOURCES})
+target_link_libraries(Pathfinding ${CMAKE_SOURCE_DIR}/external/Drawpp/libDrawpp.a)
+
+file(COPY "${CMAKE_SOURCE_DIR}/assets" DESTINATION "${CMAKE_BINARY_DIR}/bin")
+
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
