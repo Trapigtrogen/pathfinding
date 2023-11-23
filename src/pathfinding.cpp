@@ -1,16 +1,19 @@
 #include "pathfinding.hpp"
+#include "iostream"
 
 namespace Pathfinding {
 	Node* Pathfinder::DoStep() {
-		if(pathFound) { return endNode; }
+		if(pathFound) {
+			std::cout << "The path is known!" << std::endl;
+			return endNode;
+		}
 
 		std::vector<Node*>::iterator currentNodeIt = openSet.begin();
 
 		// Find lowest distance as current node
-		std::vector<Node*>::iterator it = openSet.begin();
-		for(; it != openSet.end(); it++) {
-			if((*it)->fCost() <  (*currentNodeIt)->fCost() || (*it)->hCost < (*currentNodeIt)->hCost) {
-				 (*currentNodeIt) = (*it);
+		for(Node* node : openSet) {
+			if(node->fCost() < (*currentNodeIt)->fCost() || node->hCost < (*currentNodeIt)->hCost) {
+				 (*currentNodeIt) = node;
 			}
 		}
 
@@ -18,20 +21,19 @@ namespace Pathfinding {
 
 		// Set current node checked
 		closedSet.push_back( currentNode);
-		openSet.erase(currentNodeIt);
+		currentNodeIt = openSet.erase(currentNodeIt);
 
 
 		// Path found
 		if( currentNode == endNode) {
 			pathFound = true;
-			return  currentNode;
+			return currentNode;
 		}
 
-		// Check all neighbours and set proper ones open for checking
-		for(Node* neighbour : GetNeighbourNodes(currentNode) ) {
-			// Skip closed neighbours
-			std::vector<Node*>::iterator closedIt = std::find(closedSet.begin(), closedSet.end(), neighbour);
-			if(closedIt != closedSet.end()) { continue; }
+		// Go thorough all neighbours and set proper ones open for checking
+		std::vector<Node*> neighbours = GetNeighbourNodes(currentNode);
+		for(Node* neighbour : neighbours ) {
+			neighbour->tested += 1; // For debugging heatmap
 
 			// If iterator = end neighbour is not in openSet
 			std::vector<Node*>::iterator openIt = std::find(openSet.begin(), openSet.end(), neighbour);
@@ -47,6 +49,10 @@ namespace Pathfinding {
 					openSet.push_back(neighbour);
 				}
 			}
+			if(neighbour == endNode) {
+				pathFound = true;
+				return neighbour;
+			}
 		}
 
 		return currentNode;
@@ -56,7 +62,6 @@ namespace Pathfinding {
 		for(Node* node : data) {
 			// Floor
 			if( node->pixel->red == 255 && node->pixel->green == 255 && node->pixel->blue == 255 ) {
-				pathdata.push_back(node);
 				pathdata.push_back(node);
 			}
 			// Start
@@ -68,11 +73,13 @@ namespace Pathfinding {
 			// End
 			else if( node->pixel->red == 255 && node->pixel->green == 0 && node->pixel->blue == 0 ) {
 				endNode = node;
+				pathdata.push_back(node);
 			}
+			// Walls are omitted
 		}
 		// Missing start or end
 		if(startNode == nullptr || endNode == nullptr) {
-			printf("ERROR: No Start or End marked");
+			printf("ERROR: No Start (Blue) or End (Red) marked");
 			exit(-1);
 		}
 
@@ -95,6 +102,12 @@ namespace Pathfinding {
 				if (checkPos.x <= mapSize.width-1 && checkPos.y <= mapSize.height-1) {
 					for(Node* node : pathdata) {
 						if( node->pos == checkPos ) {
+							// Skip closed neighbours
+							std::vector<Node*>::iterator closedIt = std::find(closedSet.begin(),
+													  closedSet.end(),
+													  node);
+							if(closedIt != closedSet.end()) { continue; }
+
 							neighbours.push_back(node);
 						}
 					}
@@ -141,5 +154,14 @@ namespace Pathfinding {
 
 	Node* Pathfinder::GetEndNode() {
 		return endNode;
+	}
+
+	Node* Pathfinder::GetNode(uint x, uint y) {
+		for(Node* node : pathdata) {
+			if( node->pos.x == x && node->pos.y == y ) {
+				return node;
+			}
+		}
+		return new Node( 0, 0, new Color(0,0,0) );
 	}
 }

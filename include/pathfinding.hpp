@@ -29,6 +29,8 @@ namespace Pathfinding {
 	public:
 		Position pos;
 		Color* pixel;
+		// TODO TEMP
+		uint tested = 0;
 
 		Node *parent = nullptr;
 
@@ -42,7 +44,7 @@ namespace Pathfinding {
 		}
 
 		int fCost() {
-			return this->gCost + this->hCost;
+			return gCost + hCost;
 		}
 	};
 
@@ -60,6 +62,8 @@ namespace Pathfinding {
 
 		std::vector<Node*> RetracePath(Node* endNode);
 
+		Node* GetNode(uint x, uint y);
+
 		bool pathFound = false;
 
 	private:
@@ -67,11 +71,10 @@ namespace Pathfinding {
 
 		Node* startNode;
 		Node* endNode;
-		// std::vector<Node*> wallNodes;
 
-		std::vector<Pathfinding::Node*> closedSet;
-		std::vector<Pathfinding::Node*> openSet;
 		std::vector<Pathfinding::Node*> pathdata;
+		std::vector<Pathfinding::Node*> openSet;
+		std::vector<Pathfinding::Node*> closedSet;
 
 		std::vector<Node*> GetNeighbourNodes(Node* node);
 

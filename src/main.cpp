@@ -15,13 +15,14 @@ Color pathColor = Color(0, 0, 0, 255);
 
 // Setup is called once before the application loop starts
 void setup() {
+	// Map is original, for clearing path trace
 	map = loadImage("/home/trapie/projects/pathfinding/build/bin/assets/input.bmp");
 	result = createImage(map.pixels(), map.width(), map.height());
 
 	// Create Node objects out of pixels
 	for (int i = 0; i < result.width() * result.height(); i++) {
 		uint x = i % result.width();
-		uint y = i / result.width();  // Float to uint -> floored automatically
+		uint y = i / result.width(); // Float to uint -> floored automatically
 		pathdata.push_back( new Pathfinding::Node(x, y, &result[i]) );
 	}
 	// Send node data to pathfinder object
@@ -43,26 +44,26 @@ void draw(float) {
 	// Do one A* step. DoStep does nothing if path is complete
 	Pathfinding::Node* currentNode = pathfinder.DoStep();
 
-	// Refresh image
+	// Clear previous frame path
 	result = createImage(map.pixels(), map.width(), map.height());
 	// Print path as different color
 	std::vector<Pathfinding::Node*> path = pathfinder.RetracePath(currentNode);
 	for(Pathfinding::Node* node : path) {
 		result[node->pos.x + node->pos.y*map.width()] = pathColor;
-
-		// TODO OG pixels have not kept address, is there copying somewhere.
-		// TODO This would be preferred way to render
-		// node->pixel = &pathColor;
 	}
+	// TODO DEBUG Tested nodes heatmap
+	// for(Pathfinding::Node* node : pathdata) {
+	// 	result[node->pos.x + node->pos.y*map.width()].blue -= node->tested*5;
+	// 	result[node->pos.x + node->pos.y*map.width()].green -= node->tested*5;
+	// }
+
 	// apply new pixels to texture for GPU
 	result.apply();
 
 	// Render image
-	image( result, 0, 0,  result.width()*imageScale, result.height()*imageScale );
+	image( result, 0, 0, result.width()*imageScale, result.height()*imageScale );
 
 	// TODO Render current time
-
-
 	// TODO Stop timer when done
 }
 
@@ -72,8 +73,20 @@ void keyPressed() {
 		case VK_ESC:
 			exit();
 		break;
+		// TODO WASD movement, reset tracing and draw new endpoint
+		// case VK_W:
+		// 	setup();
+		// break;
+		// case VK_A:
+		// 	setup();
+		// break;
+		// case VK_S:
+		// 	setup();
+		// break;
+		// case VK_D:
+		// 	setup();
+		// break;
 	}
-	// TODO WASD movement
 }
 
 int main() {
