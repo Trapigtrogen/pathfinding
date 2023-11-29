@@ -12,16 +12,15 @@ namespace Pathfinding {
 			return endNode;
 		}
 
-		std::vector<Node*>::iterator currentNodeIt = openSet.begin();
 
 		// Find lowest distance as current node
+		std::vector<Node*>::iterator currentNodeIt = openSet.begin();
 		for(Node* node : openSet) {
-			if(node->fCost() < (*currentNodeIt)->fCost() || node->hCost < (*currentNodeIt)->hCost) {
-				 (*currentNodeIt) = node;
-				 break;
+			// if inside has "|| node->hCost < (*currentNodeIt)->hCost" faster to find but not shortest path
+			if(node->fCost() < (*currentNodeIt)->fCost()) {
+				currentNodeIt = std::find(openSet.begin(), openSet.end(), node);
 			}
 		}
-
 		Node* currentNode = (*currentNodeIt);
 
 		// Set current node checked

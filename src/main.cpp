@@ -18,7 +18,7 @@ float winTime = 0;
 // Setup is called once before the application loop starts
 void setup() {
 	// Map is original image, for clearing drawn path every frame
-	map = loadImage("/home/trapie/projects/pathfinding/build/bin/assets/input2.bmp");
+	map = loadImage("/home/trapie/projects/pathfinding/build/bin/assets/input.bmp");
 	result = createImage(map.pixels(), map.width(), map.height());
 
 	// Create Node objects out of pixels
