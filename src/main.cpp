@@ -12,12 +12,13 @@ Color pathColor = Color(0, 0, 0, 255);
 
 int imageScale = 6;
 
-time_t timer = 0;
+float timer = 0;
+float winTime = 0;
 
 // Setup is called once before the application loop starts
 void setup() {
 	// Map is original image, for clearing drawn path every frame
-	map = loadImage("/home/trapie/projects/pathfinding/build/bin/assets/input.bmp");
+	map = loadImage("/home/trapie/projects/pathfinding/build/bin/assets/input2.bmp");
 	result = createImage(map.pixels(), map.width(), map.height());
 
 	// Create Node objects out of pixels
@@ -33,29 +34,46 @@ void setup() {
 	// Resize window to fit two maps
 	size(map.width()*imageScale, map.height()*imageScale);
 
+	// Load font from assets folder and set to render black
+    	textFont(loadFont("/home/trapie/projects/pathfinding/build/bin/assets/tuffy.ttf", 30) );
+	fill(0,0,0);
 }
 
 
 // Draw is called once every frame
 void draw(float deltaTime) {
-	// TODO Start node could be player-like object that moves algong with furthest node
-
 	// Do one A* step. DoStep does nothing if path is complete
 	// TODO If in the future there's more algorithms, they could be selected with SetAlgorithm() and this would do step for selected one
 	Pathfinding::Node* currentNode = pathfinder.DoStep();
+	if (!pathfinder.pathFound) {
+		timer += deltaTime;
+	}
+	else {
+		winTime = timer;
+	}
 
 	// Clear previous frame path
 	result = createImage(map.pixels(), map.width(), map.height());
-	// Print path as different color
+
+	// TODO DEBUG Tested nodes heatmap
+	for(Pathfinding::Node* node : pathdata) {
+		result[node->pos.x + node->pos.y * map.width()].blue -= node->tested * 10;
+		result[node->pos.x + node->pos.y * map.width()].green -= node->tested * 10;
+	}
+
+	// TODO DEBUG Open and closed set colours (need to move sets in pathfinding.hpp)
+	// for(Pathfinding::Node* node : pathfinder.openSet) {
+	// 	result[node->pos.x + node->pos.y * map.width()] = Color(70, 70, 255);
+	// }
+	// for(Pathfinding::Node* node : pathfinder.closedSet) {
+	// 	result[node->pos.x + node->pos.y * map.width()] = Color(100, 100, 200);
+	// }
+
+	// Print path
 	std::vector<Pathfinding::Node*> path = pathfinder.RetracePath(currentNode);
 	for(Pathfinding::Node* node : path) {
 		result[node->pos.x + node->pos.y * map.width()] = pathColor;
 	}
-	// TODO DEBUG Tested nodes heatmap
-	// for(Pathfinding::Node* node : pathdata) {
-	// 	result[node->pos.x + node->pos.y * map.width()].blue -= node->tested * 5;
-	// 	result[node->pos.x + node->pos.y * map.width()].green -= node->tested * 5;
-	// }
 
 	// apply new pixels to texture for GPU
 	result.apply();
@@ -63,8 +81,9 @@ void draw(float deltaTime) {
 	// Render image
 	image( result, 0, 0, result.width()*imageScale, result.height()*imageScale );
 
-	// TODO Render current time
-	// TODO Stop timer when done
+	// Render timer
+	text("Time: " + std::to_string(timer), map.width()*imageScale - 250, 30);
+
 }
 
 

@@ -28,8 +28,8 @@ namespace Pathfinding {
 	class Node {
 	public:
 		Position pos;
-		Color* pixel;
-		// TODO TEMP
+		Color* pixel; // TODO Don't use drawpp as dependency
+		// TODO DEBUG
 		uint tested = 0;
 
 		Node *parent = nullptr;
