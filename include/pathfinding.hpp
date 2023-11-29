@@ -29,8 +29,8 @@ namespace Pathfinding {
 	public:
 		Position pos;
 		Color* pixel; // TODO Don't use drawpp as dependency
-		// TODO DEBUG
-		uint tested = 0;
+		uint tested = 0; // TODO DEBUG
+
 
 		Node *parent = nullptr;
 

@@ -96,7 +96,11 @@
         {
             "tag": "TODO",
             "color": "#77C3EC"
-        }
+        },
+	{
+	    "tag": "DEBUG",
+	    "color": "#78FB5C"
+	}
     ],
     "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
     "codesnap.showWindowControls": false,

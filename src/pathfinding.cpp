@@ -16,7 +16,6 @@ namespace Pathfinding {
 		// Find lowest distance as current node
 		std::vector<Node*>::iterator currentNodeIt = openSet.begin();
 		for(Node* node : openSet) {
-			// if inside has "|| node->hCost < (*currentNodeIt)->hCost" faster to find but not shortest path
 			if(node->fCost() < (*currentNodeIt)->fCost()) {
 				currentNodeIt = std::find(openSet.begin(), openSet.end(), node);
 			}
@@ -83,8 +82,9 @@ namespace Pathfinding {
 		}
 		// Missing start or end
 		if(startNode == nullptr || endNode == nullptr) {
-			printf("ERROR: No Start (Blue) or End (Red) marked\n");
-			exit(-1);
+			printf("ERROR: No Start (Blue) or End (Red) marked. Defaulting to first and last\n");
+			startNode = (*pathdata.begin());
+			endNode = (*pathdata.end()-1);
 		}
 
 		startNode->gCost = 0;

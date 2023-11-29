@@ -56,12 +56,12 @@ void draw(float deltaTime) {
 	result = createImage(map.pixels(), map.width(), map.height());
 
 	// TODO DEBUG Tested nodes heatmap
-	for(Pathfinding::Node* node : pathdata) {
-		result[node->pos.x + node->pos.y * map.width()].blue -= node->tested * 10;
-		result[node->pos.x + node->pos.y * map.width()].green -= node->tested * 10;
-	}
+	// for(Pathfinding::Node* node : pathdata) {
+	// 	result[node->pos.x + node->pos.y * map.width()].blue -= node->tested * 10;
+	// 	result[node->pos.x + node->pos.y * map.width()].green -= node->tested * 10;
+	// }
 
-	// TODO DEBUG Open and closed set colours (need to move sets in pathfinding.hpp)
+	// TODO DEBUG Open and closed set colours (need to move sets to public in pathfinding.hpp)
 	// for(Pathfinding::Node* node : pathfinder.openSet) {
 	// 	result[node->pos.x + node->pos.y * map.width()] = Color(70, 70, 255);
 	// }
@@ -92,6 +92,8 @@ void keyPressed() {
 	Pathfinding::Position origStart = pathfinder.GetStartNodePosition();
 	Pathfinding::Position origEnd = pathfinder.GetEndNodePosition();
 	Pathfinding::Node* newNode;
+	timer = 0;
+
 	switch (key) {
 		case VK_ESC:
 			exit();
