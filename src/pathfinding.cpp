@@ -18,6 +18,7 @@ namespace Pathfinding {
 		for(Node* node : openSet) {
 			if(node->fCost() < (*currentNodeIt)->fCost() || node->hCost < (*currentNodeIt)->hCost) {
 				 (*currentNodeIt) = node;
+				 break;
 			}
 		}
 
