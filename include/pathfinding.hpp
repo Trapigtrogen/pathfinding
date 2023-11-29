@@ -64,6 +64,13 @@ namespace Pathfinding {
 
 		Node* GetNode(uint x, uint y);
 
+		void ResetPath();
+
+		Node* MoveStart(uint x, uint y);
+		Node* MoveEnd(uint x, uint y);
+		Position GetStartNodePosition();
+		Position GetEndNodePosition();
+
 		bool pathFound = false;
 
 	private:

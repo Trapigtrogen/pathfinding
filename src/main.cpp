@@ -5,17 +5,18 @@
 // Global variables
 DImage map;
 DImage result;
+
 Pathfinding::Pathfinder pathfinder;
 std::vector<Pathfinding::Node*> pathdata;
+Color pathColor = Color(0, 0, 0, 255);
 
 int imageScale = 6;
 
-Color pathColor = Color(0, 0, 0, 255);
-
+time_t timer = 0;
 
 // Setup is called once before the application loop starts
 void setup() {
-	// Map is original, for clearing path trace
+	// Map is original image, for clearing drawn path every frame
 	map = loadImage("/home/trapie/projects/pathfinding/build/bin/assets/input.bmp");
 	result = createImage(map.pixels(), map.width(), map.height());
 
@@ -32,16 +33,15 @@ void setup() {
 	// Resize window to fit two maps
 	size(map.width()*imageScale, map.height()*imageScale);
 
-	// TODO Start timer to see how long it takes to find complete route
-
 }
 
+
 // Draw is called once every frame
-void draw(float) {
-	// Clean canvas
-	background(255, 255, 255);
+void draw(float deltaTime) {
+	// TODO Start node could be player-like object that moves algong with furthest node
 
 	// Do one A* step. DoStep does nothing if path is complete
+	// TODO If in the future there's more algorithms, they could be selected with SetAlgorithm() and this would do step for selected one
 	Pathfinding::Node* currentNode = pathfinder.DoStep();
 
 	// Clear previous frame path
@@ -49,12 +49,12 @@ void draw(float) {
 	// Print path as different color
 	std::vector<Pathfinding::Node*> path = pathfinder.RetracePath(currentNode);
 	for(Pathfinding::Node* node : path) {
-		result[node->pos.x + node->pos.y*map.width()] = pathColor;
+		result[node->pos.x + node->pos.y * map.width()] = pathColor;
 	}
 	// TODO DEBUG Tested nodes heatmap
 	// for(Pathfinding::Node* node : pathdata) {
-	// 	result[node->pos.x + node->pos.y*map.width()].blue -= node->tested*5;
-	// 	result[node->pos.x + node->pos.y*map.width()].green -= node->tested*5;
+	// 	result[node->pos.x + node->pos.y * map.width()].blue -= node->tested * 5;
+	// 	result[node->pos.x + node->pos.y * map.width()].green -= node->tested * 5;
 	// }
 
 	// apply new pixels to texture for GPU
@@ -67,27 +67,69 @@ void draw(float) {
 	// TODO Stop timer when done
 }
 
+
 // Register keybinds
 void keyPressed() {
+	Pathfinding::Position origStart = pathfinder.GetStartNodePosition();
+	Pathfinding::Position origEnd = pathfinder.GetEndNodePosition();
+	Pathfinding::Node* newNode;
 	switch (key) {
 		case VK_ESC:
 			exit();
 		break;
-		// TODO WASD movement, reset tracing and draw new endpoint
-		// case VK_W:
-		// 	setup();
-		// break;
-		// case VK_A:
-		// 	setup();
-		// break;
-		// case VK_S:
-		// 	setup();
-		// break;
-		// case VK_D:
-		// 	setup();
-		// break;
+		// WASD moves start node
+		case VK_W:
+			map[origStart.x + origStart.y * map.width()] = Color(255, 255, 255);
+			newNode = pathfinder.MoveStart(origStart.x, origStart.y - 1);
+			pathfinder.ResetPath();
+			map[newNode->pos.x + newNode->pos.y * map.width()] = Color(0, 0, 255);
+		break;
+		case VK_A:
+			map[origStart.x + origStart.y * map.width()] = Color(255, 255, 255);
+			newNode = pathfinder.MoveStart(origStart.x - 1, origStart.y);
+			pathfinder.ResetPath();
+			map[newNode->pos.x + newNode->pos.y * map.width()] = Color(0, 0, 255);
+		break;
+		case VK_S:
+			map[origStart.x + origStart.y * map.width()] = Color(255, 255, 255);
+			newNode = pathfinder.MoveStart(origStart.x, origStart.y + 1);
+			pathfinder.ResetPath();
+			map[newNode->pos.x + newNode->pos.y * map.width()] = Color(0, 0, 255);
+		break;
+		case VK_D:
+			map[origStart.x + origStart.y * map.width()] = Color(255, 255, 255);
+			newNode = pathfinder.MoveStart(origStart.x + 1, origStart.y);
+			pathfinder.ResetPath();
+			map[newNode->pos.x + newNode->pos.y * map.width()] = Color(0, 0, 255);
+		break;
+		// IJKL moves end node
+		case VK_I:
+			map[origEnd.x + origEnd.y * map.width()] = Color(255, 255, 255);
+			newNode = pathfinder.MoveEnd(origEnd.x, origEnd.y - 1);
+			pathfinder.ResetPath();
+			map[newNode->pos.x + newNode->pos.y * map.width()] = Color(255, 0, 0);
+		break;
+		case VK_J:
+			map[origEnd.x + origEnd.y * map.width()] = Color(255, 255, 255);
+			newNode = pathfinder.MoveEnd(origEnd.x - 1, origEnd.y);
+			pathfinder.ResetPath();
+			map[newNode->pos.x + newNode->pos.y * map.width()] = Color(255, 0, 0);
+		break;
+		case VK_K:
+			map[origEnd.x + origEnd.y * map.width()] = Color(255, 255, 255);
+			newNode = pathfinder.MoveEnd(origEnd.x, origEnd.y + 1);
+			pathfinder.ResetPath();
+			map[newNode->pos.x + newNode->pos.y * map.width()] = Color(255, 0, 0);
+		break;
+		case VK_L:
+			map[origEnd.x + origEnd.y * map.width()] = Color(255, 255, 255);
+			newNode = pathfinder.MoveEnd(origEnd.x + 1, origEnd.y);
+			pathfinder.ResetPath();
+			map[newNode->pos.x + newNode->pos.y * map.width()] = Color(255, 0, 0);
+		break;
 	}
 }
+
 
 int main() {
 	// Create the application object

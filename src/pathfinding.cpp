@@ -1,10 +1,14 @@
 #include "pathfinding.hpp"
-#include "iostream"
 
 namespace Pathfinding {
 	Node* Pathfinder::DoStep() {
+		if(openSet.size() == 0) {
+			printf("Open set is empty\n");
+			ResetPath();
+			return startNode;
+		}
 		if(pathFound) {
-			std::cout << "The path is known!" << std::endl;
+			printf("The path is known\n");
 			return endNode;
 		}
 
@@ -20,15 +24,15 @@ namespace Pathfinding {
 		Node* currentNode = (*currentNodeIt);
 
 		// Set current node checked
-		closedSet.push_back( currentNode);
+		closedSet.push_back( (*currentNodeIt));
 		currentNodeIt = openSet.erase(currentNodeIt);
-
 
 		// Path found
 		if( currentNode == endNode) {
 			pathFound = true;
 			return currentNode;
 		}
+
 
 		// Go thorough all neighbours and set proper ones open for checking
 		std::vector<Node*> neighbours = GetNeighbourNodes(currentNode);
@@ -79,7 +83,7 @@ namespace Pathfinding {
 		}
 		// Missing start or end
 		if(startNode == nullptr || endNode == nullptr) {
-			printf("ERROR: No Start (Blue) or End (Red) marked");
+			printf("ERROR: No Start (Blue) or End (Red) marked\n");
 			exit(-1);
 		}
 
@@ -87,6 +91,22 @@ namespace Pathfinding {
 		startNode->hCost = GetDistance(startNode, endNode);
 		endNode->hCost = 0;
 		endNode->gCost = GetDistance(endNode, startNode);
+	}
+
+	void Pathfinder::ResetPath() {
+		closedSet.clear();
+		openSet.clear();
+		openSet.push_back(startNode);
+
+		// Reset costs // TODO can be recalculated
+		for(std::vector<Node*>::iterator it = pathdata.begin(); it != pathdata.end(); it++) {
+			(*it)->gCost = 0;
+			(*it)->hCost = 0;
+		}
+		startNode->hCost = GetDistance(startNode, endNode);
+		endNode->gCost = GetDistance(endNode, startNode);
+
+		pathFound = false;
 	}
 
 	std::vector<Node*> Pathfinder::GetNeighbourNodes(Node* node) {
@@ -126,6 +146,45 @@ namespace Pathfinding {
 		return mapSize;
 	}
 
+	Position Pathfinder::GetStartNodePosition() {
+		return startNode->pos;
+	}
+
+	Position Pathfinder::GetEndNodePosition() {
+		return endNode->pos;
+	}
+
+	Node* Pathfinder::MoveStart(uint x, uint y) {
+		Position newPos(x, y);
+		if(newPos.x > mapSize.width-1 || newPos.y > mapSize.height-1) {
+			printf("Invalid position\n");
+			return startNode;
+		}
+
+		std::vector<Node*>::iterator nodeIt = pathdata.begin();
+		for(; nodeIt != pathdata.end(); nodeIt++) {
+			if( (*nodeIt)->pos == newPos) {
+				startNode = (*nodeIt);
+			}
+		}
+		return startNode;
+	}
+
+	Node* Pathfinder::MoveEnd(uint x, uint y) {
+		Position newPos(x, y);
+		if(newPos.x > mapSize.width-1 || newPos.y > mapSize.height-1) {
+			printf("Invalid position\n");
+			return endNode;
+		}
+
+		std::vector<Node*>::iterator nodeIt = pathdata.begin();
+		for(; nodeIt != pathdata.end(); nodeIt++) {
+			if( (*nodeIt)->pos == newPos) {
+				endNode = (*nodeIt);
+			}
+		}
+		return endNode;
+	}
 
 	int Pathfinder::GetDistance(Node *nodeA, Node *nodeB) {
 		int dstX = abs((int)nodeA->pos.x - (int)nodeB->pos.x);
