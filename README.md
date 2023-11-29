@@ -18,7 +18,9 @@ Will create a file called Pathfinding into the build directory
 
 ## Window
 
+### I don't have Windows so I cannot test for it
+
 * Build Windows version of Drawpp and replace external/Drawpp: https://gitlab.com/Trapigtrogen/graphics-library
 * Prebuilt library exists but is out-of-date: https://gitlab.com/Trapigtrogen/graphics-library/-/releases/v1.0.0
-* Cmake steps for Windows. It works if it works idk.
-* Or use virtual machine or WSL
+* Same Cmake steps for Windows. It works if it works idk
+* Use Linux on live boot, virtual machine or WSL
